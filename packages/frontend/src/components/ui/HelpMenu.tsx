@@ -76,7 +76,7 @@ export function HelpMenu() {
               <span>About</span>
             </button>
             <a
-              href="https://github.com/Madhankannan02/oscilink/issues"
+              href="https://github.com/madhan295/oscilink/issues"
               target="_blank"
               rel="noopener noreferrer"
               className="w-full text-left px-4 py-2 text-sm text-[#2C5E4A] font-medium hover:bg-[#F3F4F3] flex items-center gap-3 transition-colors"
