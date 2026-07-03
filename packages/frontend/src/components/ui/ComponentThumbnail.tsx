@@ -37,6 +37,8 @@ export const ComponentThumbnail: React.FC<ComponentThumbnailProps> = ({ type, si
       case 'ULTRASONIC_SENSOR': return { scale: size / 208, offsetX: 0, offsetY: 58 };
       case 'RELAY': return { scale: size / 100, offsetX: 0, offsetY: 0 };
       case 'TEMPERATURE_SENSOR': return { scale: size / 66, offsetX: 0, offsetY: 33 };
+      case 'SEVEN_SEG_CC':
+      case 'SEVEN_SEG_CA': return { scale: size / 100, offsetX: -30, offsetY: -45 };
       default: return { scale: size / 100, offsetX: -50, offsetY: -50 };
     }
   }, [type, size]);
