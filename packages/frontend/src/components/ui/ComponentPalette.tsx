@@ -31,6 +31,7 @@ const CATEGORIES: CategoryDef[] = [
     components: [
       { type: 'LED', name: 'LED', description: 'Light Emitting Diode' },
       { type: 'RESISTOR', name: 'Resistor', description: 'Current limiting resistor' },
+      { type: 'CAPACITOR', name: 'Capacitor', description: 'Stores electrical energy' },
       { type: 'PUSH_BUTTON', name: 'Push Button', description: 'Momentary tactile switch' },
       { type: 'POTENTIOMETER', name: 'Potentiometer', description: 'Variable resistor' }
     ]
@@ -47,10 +48,27 @@ const CATEGORIES: CategoryDef[] = [
     ]
   },
   {
+    name: 'Semiconductors',
+    components: [
+      { type: 'TRANSISTOR_NPN', name: 'NPN Transistor', description: 'Bipolar junction transistor' },
+      { type: 'TRANSISTOR_PNP', name: 'PNP Transistor', description: 'Bipolar junction transistor' },
+      { type: 'DIODE', name: 'Diode', description: 'Allows current in one direction' },
+      { type: 'ZENER_DIODE', name: 'Zener Diode', description: 'Voltage regulation diode' }
+    ]
+  },
+  {
     name: 'Sensors',
     components: [
       { type: 'ULTRASONIC_SENSOR', name: 'Ultrasonic Sensor HC-SR04', description: 'Distance sensor' },
-      { type: 'TEMPERATURE_SENSOR', name: 'Temperature Sensor DHT11', description: 'Temp & humidity' }
+      { type: 'TEMPERATURE_SENSOR', name: 'Temperature Sensor DHT11', description: 'Temp & humidity' },
+      { type: 'PHOTORESISTOR', name: 'Photoresistor (LDR)', description: 'Light dependent resistor' },
+      { type: 'THERMISTOR', name: 'Thermistor', description: 'Temperature dependent resistor' }
+    ]
+  },
+  {
+    name: 'Test Equipment',
+    components: [
+      { type: 'MULTIMETER', name: 'Multimeter', description: 'Voltage, Current, Resistance' }
     ]
   },
   {

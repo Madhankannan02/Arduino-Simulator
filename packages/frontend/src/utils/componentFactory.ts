@@ -318,6 +318,65 @@ export function createComponent(type: ComponentType, position: Point): CircuitCo
       break;
     }
 
+    
+    case 'CAPACITOR': {
+      pins['POSITIVE'] = createPin('POSITIVE', '+', 'power', 'input', { x: 20, y: 80 });
+      pins['NEGATIVE'] = createPin('NEGATIVE', '-', 'ground', 'input', { x: 40, y: 80 });
+      properties = { type: 'electrolytic', capacitance: 100, voltageRating: 25 };
+      break;
+    }
+
+    case 'TRANSISTOR_NPN': {
+      pins['COLLECTOR'] = createPin('COLLECTOR', 'C', 'digital', 'bidirectional', { x: 25, y: 15 });
+      pins['BASE'] = createPin('BASE', 'B', 'digital', 'input', { x: 5, y: 40 });
+      pins['EMITTER'] = createPin('EMITTER', 'E', 'ground', 'bidirectional', { x: 25, y: 65 });
+      properties = { model: 'BC547', hFE: 100, maxCollectorCurrentMa: 200, maxVce: 45 };
+      break;
+    }
+
+    case 'TRANSISTOR_PNP': {
+      pins['EMITTER'] = createPin('EMITTER', 'E', 'power', 'bidirectional', { x: 25, y: 15 });
+      pins['BASE'] = createPin('BASE', 'B', 'digital', 'input', { x: 5, y: 40 });
+      pins['COLLECTOR'] = createPin('COLLECTOR', 'C', 'digital', 'bidirectional', { x: 25, y: 65 });
+      properties = { model: 'BC557', hFE: 100, maxCollectorCurrentMa: 200, maxVce: 45 };
+      break;
+    }
+
+    case 'DIODE': {
+      pins['ANODE'] = createPin('ANODE', 'A', 'digital', 'bidirectional', { x: 10, y: 30 });
+      pins['CATHODE'] = createPin('CATHODE', 'K', 'digital', 'bidirectional', { x: 50, y: 30 });
+      properties = { type: 'silicon', maxCurrentMa: 200, piv: 50 };
+      break;
+    }
+
+    case 'ZENER_DIODE': {
+      pins['ANODE'] = createPin('ANODE', 'A', 'digital', 'bidirectional', { x: 10, y: 30 });
+      pins['CATHODE'] = createPin('CATHODE', 'K', 'digital', 'bidirectional', { x: 50, y: 30 });
+      properties = { zenerVoltage: 5.1, powerRatingW: 0.5 };
+      break;
+    }
+
+    case 'PHOTORESISTOR': {
+      pins['PIN_1'] = createPin('PIN_1', '1', 'digital', 'bidirectional', { x: 10, y: 60 });
+      pins['PIN_2'] = createPin('PIN_2', '2', 'digital', 'bidirectional', { x: 50, y: 60 });
+      properties = { simulatedLightLevel: 50, darkResistance: 1000000, brightResistance: 200 };
+      break;
+    }
+
+    case 'THERMISTOR': {
+      pins['PIN_1'] = createPin('PIN_1', '1', 'digital', 'bidirectional', { x: 10, y: 60 });
+      pins['PIN_2'] = createPin('PIN_2', '2', 'digital', 'bidirectional', { x: 50, y: 60 });
+      properties = { simulatedTemperature: 25, nominalResistance: 10000, bCoefficient: 3950, type: 'NTC' };
+      break;
+    }
+
+    case 'MULTIMETER': {
+      pins['RED_PROBE'] = createPin('RED_PROBE', 'V/Ω/A', 'digital', 'input', { x: 70, y: 220 });
+      pins['BLACK_PROBE'] = createPin('BLACK_PROBE', 'COM', 'ground', 'input', { x: 30, y: 220 });
+      properties = { mode: 'DCV', displayBacklight: true };
+      break;
+    }
+
     default:
       throw new Error(`Unknown component type: ${type}`);
   }

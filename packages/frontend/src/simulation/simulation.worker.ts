@@ -215,6 +215,9 @@ function parseIntelHex(hexString: string): Uint8Array {
   return flash;
 }
 
+
+let capacitorStates: Map<string, { chargeVoltage: number, lastUpdateTime: number }> = new Map();
+
 function stopSimulation() {
   isRunning = false;
   if (simulationLoopTimer) {
@@ -231,8 +234,416 @@ function stopSimulation() {
   simulationStartTime = 0;
   lastActivityTime = 0;
   stackWarningPosted = false;
+  capacitorStates.clear();
+
 }
 
+
+
+function updateComponentsState(now: number) {
+  if (!circuitGraph) return;
+
+  for (const [id, comp] of circuitGraph.components.entries()) {
+    // CAPACITOR
+    if (comp.type === 'CAPACITOR') {
+      let state = capacitorStates.get(id);
+      if (!state) {
+        state = { chargeVoltage: 0, lastUpdateTime: now };
+        capacitorStates.set(id, state);
+      }
+      
+      const dt = Math.max(0.001, (now - state.lastUpdateTime) / 1000);
+      state.lastUpdateTime = now;
+
+      const isPolarized = comp.properties?.type === 'electrolytic';
+      const pin1Id = isPolarized ? 'POSITIVE' : 'PIN_1';
+      const pin2Id = isPolarized ? 'NEGATIVE' : 'PIN_2';
+      
+      const v1 = circuitGraph.getNodeVoltage(id, pin1Id);
+      const v2 = circuitGraph.getNodeVoltage(id, pin2Id);
+      
+      let appliedVoltage = v1 - v2;
+      let reverse = false;
+      if (appliedVoltage < 0 && !isPolarized) {
+        appliedVoltage = -appliedVoltage;
+        reverse = true;
+      }
+      
+      const seriesResistance = Math.max(10, circuitGraph.findSeriesResistance(`${id}.${pin1Id}`));
+      const capacitance = (Number(comp.properties?.capacitance) || 10) * 1e-6;
+      const tau = seriesResistance * capacitance;
+      
+      let isReversePolarized = false;
+      if (isPolarized && (v2 - v1) > 0.1) {
+        isReversePolarized = true;
+      }
+
+      const newCharge = appliedVoltage + (state.chargeVoltage - appliedVoltage) * Math.exp(-dt / tau);
+      let currentMa = (capacitance * Math.abs(newCharge - state.chargeVoltage) / dt) * 1000;
+      if (currentMa < 0.001) currentMa = 0;
+      
+      state.chargeVoltage = newCharge;
+
+      const voltageRating = Number(comp.properties?.voltageRating) || 25;
+      const chargePercent = Math.min(100, Math.max(0, (state.chargeVoltage / voltageRating) * 100));
+      const storedEnergy = 0.5 * capacitance * state.chargeVoltage * state.chargeVoltage * 1e6;
+      const isOvervoltage = state.chargeVoltage > voltageRating;
+
+      queueComponentUpdate(id, {
+        chargeVoltage: state.chargeVoltage,
+        chargePercent,
+        storedEnergy,
+        isFullyCharged: Math.abs(appliedVoltage - state.chargeVoltage) < 0.05,
+        isCharging: appliedVoltage > state.chargeVoltage + 0.05,
+        isDischarging: appliedVoltage < state.chargeVoltage - 0.05,
+        currentMa,
+        isOvervoltage,
+        isReversePolarized
+      });
+    }
+    
+    // TRANSISTOR NPN
+    else if (comp.type === 'TRANSISTOR_NPN') {
+      const vBase = circuitGraph.getNodeVoltage(id, 'BASE');
+      const vEmitter = circuitGraph.getNodeVoltage(id, 'EMITTER');
+      const vCollector = circuitGraph.getNodeVoltage(id, 'COLLECTOR');
+      
+      const vbe = vBase - vEmitter;
+      let isOn = false;
+      let ib = 0;
+      let ic = 0;
+      let operatingMode = 'cutoff';
+      const hFE = Number(comp.properties?.hFE) || 100;
+      const maxIc = Number(comp.properties?.maxCollectorCurrentMa) || 200;
+      const maxVce = Number(comp.properties?.maxVce) || 45;
+      const vce = vCollector - vEmitter;
+
+      if (vbe >= 0.7) {
+        const rb = Math.max(10, circuitGraph.findSeriesResistance(`${id}.BASE`));
+        ib = ((vbe - 0.7) / rb) * 1000000; // microamps
+        
+        const ic_desired = (ib / 1000) * hFE; // mA
+        
+        const rc = Math.max(1, circuitGraph.findSeriesResistance(`${id}.COLLECTOR`));
+        const ic_available = Math.max(0, (vCollector - 0.2) / rc) * 1000; // mA
+        
+        if (ic_desired > ic_available) {
+          operatingMode = 'saturation';
+          ic = ic_available;
+          circuitGraph.closeSwitch(`${id}.COLLECTOR`, `${id}.EMITTER`);
+          isOn = true;
+        } else {
+          operatingMode = 'active';
+          ic = ic_desired;
+          if (ic > 1) {
+            circuitGraph.closeSwitch(`${id}.COLLECTOR`, `${id}.EMITTER`);
+            isOn = true;
+          } else {
+            circuitGraph.openSwitch(`${id}.COLLECTOR`, `${id}.EMITTER`);
+          }
+        }
+      } else {
+        circuitGraph.openSwitch(`${id}.COLLECTOR`, `${id}.EMITTER`);
+      }
+
+      queueComponentUpdate(id, {
+        isOn, vbe, vce, ib, ic, operatingMode,
+        gainActual: ib > 0 ? (ic / (ib / 1000)) : 0,
+        isOvercurrent: ic > maxIc,
+        isOvervoltage: vce > maxVce
+      });
+    }
+
+    // TRANSISTOR PNP
+    else if (comp.type === 'TRANSISTOR_PNP') {
+      const vBase = circuitGraph.getNodeVoltage(id, 'BASE');
+      const vEmitter = circuitGraph.getNodeVoltage(id, 'EMITTER');
+      const vCollector = circuitGraph.getNodeVoltage(id, 'COLLECTOR');
+      
+      const veb = vEmitter - vBase;
+      let isOn = false;
+      let ib = 0;
+      let ic = 0;
+      let operatingMode = 'cutoff';
+      const hFE = Number(comp.properties?.hFE) || 100;
+      const maxIc = Number(comp.properties?.maxCollectorCurrentMa) || 200;
+      const maxVce = Number(comp.properties?.maxVce) || 45;
+      const vec = vEmitter - vCollector;
+
+      if (veb >= 0.7) {
+        const rb = Math.max(10, circuitGraph.findSeriesResistance(`${id}.BASE`));
+        ib = ((veb - 0.7) / rb) * 1000000;
+        
+        const ic_desired = (ib / 1000) * hFE;
+        
+        const rc = Math.max(1, circuitGraph.findSeriesResistance(`${id}.COLLECTOR`));
+        const ic_available = Math.max(0, (vEmitter - 0.2 - vCollector) / rc) * 1000;
+        
+        if (ic_desired > ic_available) {
+          operatingMode = 'saturation';
+          ic = ic_available;
+          circuitGraph.closeSwitch(`${id}.EMITTER`, `${id}.COLLECTOR`);
+          isOn = true;
+        } else {
+          operatingMode = 'active';
+          ic = ic_desired;
+          if (ic > 1) {
+            circuitGraph.closeSwitch(`${id}.EMITTER`, `${id}.COLLECTOR`);
+            isOn = true;
+          } else {
+            circuitGraph.openSwitch(`${id}.EMITTER`, `${id}.COLLECTOR`);
+          }
+        }
+      } else {
+        circuitGraph.openSwitch(`${id}.EMITTER`, `${id}.COLLECTOR`);
+      }
+
+      queueComponentUpdate(id, {
+        isOn, vbe: -veb, vce: -vec, ib, ic, operatingMode,
+        gainActual: ib > 0 ? (ic / (ib / 1000)) : 0,
+        isOvercurrent: ic > maxIc,
+        isOvervoltage: vec > maxVce
+      });
+    }
+
+    // DIODE
+    else if (comp.type === 'DIODE') {
+      const vAnode = circuitGraph.getNodeVoltage(id, 'ANODE');
+      const vCathode = circuitGraph.getNodeVoltage(id, 'CATHODE');
+      const vDiff = vAnode - vCathode;
+      
+      const type = comp.properties?.type || 'silicon';
+      const vf = type === 'schottky' || type === 'germanium' ? 0.3 : 0.7;
+      const piv = Number(comp.properties?.piv) || 50;
+      const maxCurrent = Number(comp.properties?.maxCurrentMa) || 200;
+      
+      let isForwardBiased = false;
+      let isReverseBlocked = false;
+      let isBreakdown = false;
+      let currentMa = 0;
+      let actualVdrop = 0;
+      
+      if (vDiff > vf) {
+        isForwardBiased = true;
+        circuitGraph.closeSwitch(`${id}.ANODE`, `${id}.CATHODE`);
+        const r = Math.max(1, circuitGraph.findSeriesResistance(`${id}.ANODE`));
+        currentMa = ((vDiff - vf) / r) * 1000;
+        actualVdrop = vf;
+      } else if (vDiff < -piv) {
+        isBreakdown = true;
+        actualVdrop = Math.abs(vDiff);
+        circuitGraph.closeSwitch(`${id}.ANODE`, `${id}.CATHODE`);
+      } else {
+        isReverseBlocked = true;
+        circuitGraph.openSwitch(`${id}.ANODE`, `${id}.CATHODE`);
+        actualVdrop = Math.max(0, vDiff);
+      }
+
+      const powerDissipationMw = actualVdrop * currentMa;
+
+      queueComponentUpdate(id, {
+        isForwardBiased, isReverseBlocked, isBreakdown,
+        voltageDrop: actualVdrop, currentMa, powerDissipationMw,
+        isOvercurrent: currentMa > maxCurrent
+      });
+    }
+
+    // ZENER DIODE
+    else if (comp.type === 'ZENER_DIODE') {
+      const vAnode = circuitGraph.getNodeVoltage(id, 'ANODE');
+      const vCathode = circuitGraph.getNodeVoltage(id, 'CATHODE');
+      const vDiff = vAnode - vCathode;
+      const vz = Number(comp.properties?.zenerVoltage) || 5.1;
+      const maxPowerW = Number(comp.properties?.powerRatingW) || 0.5;
+      
+      let isForwardBiased = false;
+      let isReverseZenerConduction = false;
+      let currentMa = 0;
+      let actualVdrop = 0;
+      let regulationStatus = 'below_threshold';
+      
+      if (vDiff > 0.7) {
+        isForwardBiased = true;
+        circuitGraph.closeSwitch(`${id}.ANODE`, `${id}.CATHODE`);
+        const r = Math.max(1, circuitGraph.findSeriesResistance(`${id}.ANODE`));
+        currentMa = ((vDiff - 0.7) / r) * 1000;
+      } else if (vCathode - vAnode >= vz) {
+        isReverseZenerConduction = true;
+        regulationStatus = 'regulating';
+        const r = Math.max(1, circuitGraph.findSeriesResistance(`${id}.CATHODE`));
+        currentMa = (((vCathode - vAnode) - vz) / r) * 1000;
+        actualVdrop = vz;
+      } else {
+        circuitGraph.openSwitch(`${id}.ANODE`, `${id}.CATHODE`);
+      }
+
+      const powerDissipationMw = vz * currentMa;
+      const isOverpower = powerDissipationMw > maxPowerW * 1000;
+      if (isOverpower) regulationStatus = 'overpower';
+
+      queueComponentUpdate(id, {
+        isForwardBiased, isReverseZenerConduction,
+        regulatedVoltage: actualVdrop, currentMa,
+        powerDissipationMw, isOverpower, regulationStatus
+      });
+    }
+
+    // PHOTORESISTOR (LDR)
+    else if (comp.type === 'PHOTORESISTOR') {
+      const light = Number(comp.properties?.simulatedLightLevel) || 0;
+      const darkR = Number(comp.properties?.darkResistance) || 1000000;
+      const brightR = Number(comp.properties?.brightResistance) || 200;
+      
+      const normalizedLight = light / 100;
+      const currentResistance = brightR + (darkR - brightR) * Math.pow(1 - normalizedLight, 3);
+      
+      circuitGraph.setDynamicResistance(id, currentResistance);
+      circuitGraph.closeSwitch(`${id}.PIN_1`, `${id}.PIN_2`);
+
+      const v1 = circuitGraph.getNodeVoltage(id, 'PIN_1');
+      const v2 = circuitGraph.getNodeVoltage(id, 'PIN_2');
+      const voltageAcross = Math.abs(v1 - v2);
+      const currentMa = (voltageAcross / currentResistance) * 1000;
+
+      const seriesR = circuitGraph.findSeriesResistance(`${id}.PIN_1`);
+      let analogReadValue = 0;
+      if (seriesR > 0) {
+        const vOut = 5.0 * (currentResistance / (seriesR + currentResistance));
+        analogReadValue = Math.floor((vOut / 5.0) * 1023);
+      }
+
+      let cat = 'dark';
+      if (light > 80) cat = 'very_bright';
+      else if (light > 60) cat = 'bright';
+      else if (light > 40) cat = 'normal';
+      else if (light > 20) cat = 'dim';
+
+      queueComponentUpdate(id, {
+        lightLevel: light, currentResistance, voltageAcross,
+        currentMa, analogReadValue, resistanceCategory: cat,
+        description: `Light level: ${light}%`
+      });
+    }
+
+    // THERMISTOR
+    else if (comp.type === 'THERMISTOR') {
+      const tempC = Number(comp.properties?.simulatedTemperature) ?? 25;
+      const r0 = Number(comp.properties?.nominalResistance) || 10000;
+      const b = Number(comp.properties?.bCoefficient) || 3950;
+      const t0 = 298.15;
+      const tk = tempC + 273.15;
+      
+      let currentResistance = r0 * Math.exp(b * (1/tk - 1/t0));
+      if (comp.properties?.type === 'PTC') {
+        currentResistance = r0 * Math.exp(b * (1/t0 - 1/tk));
+      }
+
+      circuitGraph.setDynamicResistance(id, currentResistance);
+      circuitGraph.closeSwitch(`${id}.PIN_1`, `${id}.PIN_2`);
+
+      const v1 = circuitGraph.getNodeVoltage(id, 'PIN_1');
+      const v2 = circuitGraph.getNodeVoltage(id, 'PIN_2');
+      const voltageAcross = Math.abs(v1 - v2);
+      const currentMa = (voltageAcross / currentResistance) * 1000;
+
+      const seriesR = circuitGraph.findSeriesResistance(`${id}.PIN_1`);
+      let analogReadValue = 0;
+      if (seriesR > 0) {
+        const vOut = 5.0 * (currentResistance / (seriesR + currentResistance));
+        analogReadValue = Math.floor((vOut / 5.0) * 1023);
+      }
+
+      queueComponentUpdate(id, {
+        temperatureCelsius: tempC,
+        temperatureFahrenheit: (tempC * 9/5) + 32,
+        temperatureKelvin: tk,
+        currentResistance, voltageAcross, currentMa,
+        analogReadValue, resistanceDescription: `Temp: ${tempC}°C`
+      });
+    }
+
+    // MULTIMETER
+    else if (comp.type === 'MULTIMETER') {
+      const mode = String(comp.properties?.mode || 'DCV');
+      const vRed = circuitGraph.getNodeVoltage(id, 'RED_PROBE');
+      const vBlack = circuitGraph.getNodeVoltage(id, 'BLACK_PROBE');
+      
+      const nodeR = circuitGraph.nodes.get(`${id}.RED_PROBE`);
+      const nodeB = circuitGraph.nodes.get(`${id}.BLACK_PROBE`);
+      const isConnected = !!(nodeR && nodeB && circuitGraph.adjacency.get(`${id}.RED_PROBE`)?.size && circuitGraph.adjacency.get(`${id}.BLACK_PROBE`)?.size);
+      
+      let displayValue = '---';
+      let rawValue = 0;
+      let unit = '';
+      let isOverload = false;
+      let warningMessage = '';
+      let signalStrength = 'open';
+
+      if (isConnected) {
+        if (mode === 'DCV') {
+          const v = vRed - vBlack;
+          rawValue = v;
+          if (Math.abs(v) < 1.0 && Math.abs(v) > 0.001) {
+            displayValue = (v * 1000).toPrecision(4);
+            unit = 'mV';
+          } else {
+            displayValue = v.toPrecision(4);
+            unit = 'V';
+          }
+        } else if (mode === 'DCA') {
+          const r = Math.max(1, circuitGraph.findSeriesResistance(`${id}.RED_PROBE`));
+          const iMa = ((vRed - vBlack) / r) * 1000;
+          rawValue = iMa;
+          if (Math.abs(iMa) >= 1000) {
+            displayValue = (iMa / 1000).toPrecision(4);
+            unit = 'A';
+          } else {
+            displayValue = iMa.toPrecision(4);
+            unit = 'mA';
+          }
+        } else if (mode === 'resistance') {
+          if (Math.abs(vRed - vBlack) > 0.1) {
+            warningMessage = 'Voltage present - remove before resistance check';
+            displayValue = 'OL';
+          } else {
+            const r = circuitGraph.findSeriesResistance(`${id}.RED_PROBE`);
+            rawValue = r;
+            if (r > 10000000 || r === 0) {
+              displayValue = 'OL';
+            } else if (r >= 1000000) {
+              displayValue = (r / 1000000).toPrecision(4); unit = 'MΩ';
+            } else if (r >= 1000) {
+              displayValue = (r / 1000).toPrecision(4); unit = 'kΩ';
+            } else {
+              displayValue = r.toPrecision(4); unit = 'Ω';
+            }
+          }
+        } else if (mode === 'continuity') {
+          const r = circuitGraph.findSeriesResistance(`${id}.RED_PROBE`);
+          if (r < 50 && r > 0) {
+            displayValue = 'BEEP';
+            signalStrength = 'strong';
+          } else {
+            displayValue = 'OL';
+          }
+        } else if (mode === 'diode') {
+          const v = vRed - vBlack;
+          if (v > 0.1 && v < 2.0) {
+            displayValue = (v * 1000).toPrecision(4);
+            unit = 'mV';
+          } else {
+            displayValue = 'OL';
+          }
+        }
+      }
+
+      queueComponentUpdate(id, {
+        mode, displayValue, rawValue, unit, isOverload,
+        isConnected, warningMessage, signalStrength
+      });
+    }
+  }
+}
 
 function simulationLoop() {
   if (!isRunning) return;
@@ -289,6 +700,7 @@ function simulationLoop() {
     lastActivityTime = now; // Reset to fire again in 8s
   }
 
+  updateComponentsState(now);
   flushUpdates();
   simulationLoopTimer = setTimeout(simulationLoop, 16);
 }

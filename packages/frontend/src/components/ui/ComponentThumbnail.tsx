@@ -39,6 +39,14 @@ export const ComponentThumbnail: React.FC<ComponentThumbnailProps> = ({ type, si
       case 'TEMPERATURE_SENSOR': return { scale: size / 66, offsetX: 0, offsetY: 33 };
       case 'SEVEN_SEG_CC':
       case 'SEVEN_SEG_CA': return { scale: size / 100, offsetX: -30, offsetY: -45 };
+      case 'CAPACITOR': return { scale: size / 100, offsetX: -30, offsetY: -40 };
+      case 'TRANSISTOR_NPN':
+      case 'TRANSISTOR_PNP': return { scale: size / 100, offsetX: -25, offsetY: -40 };
+      case 'DIODE':
+      case 'ZENER_DIODE': return { scale: size / 80, offsetX: -30, offsetY: -20 };
+      case 'PHOTORESISTOR':
+      case 'THERMISTOR': return { scale: size / 90, offsetX: -30, offsetY: -35 };
+      case 'MULTIMETER': return { scale: size / 250, offsetX: -50, offsetY: -115 };
       default: return { scale: size / 100, offsetX: -50, offsetY: -50 };
     }
   }, [type, size]);

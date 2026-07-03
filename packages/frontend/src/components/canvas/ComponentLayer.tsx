@@ -21,7 +21,14 @@ import { TemperatureSensor } from '../circuit-components/active/TemperatureSenso
 import { Breadboard } from '../circuit-components/passive/Breadboard';
 import { SevenSegmentCC } from '../circuit-components/active/SevenSegmentCC';
 import { SevenSegmentCA } from '../circuit-components/active/SevenSegmentCA';
-
+import { Capacitor } from '../circuit-components/passive/Capacitor';
+import { TransistorNPN } from '../circuit-components/active/TransistorNPN';
+import { TransistorPNP } from '../circuit-components/active/TransistorPNP';
+import { Diode } from '../circuit-components/passive/Diode';
+import { ZenerDiode } from '../circuit-components/passive/ZenerDiode';
+import { Photoresistor } from '../circuit-components/passive/Photoresistor';
+import { Thermistor } from '../circuit-components/passive/Thermistor';
+import { Multimeter } from '../circuit-components/tools/Multimeter';
 const FallbackComponent = ({ component }: { component: CircuitComponent }) => (
   <Group x={component.position.x} y={component.position.y} rotation={component.rotation}>
     <Rect width={100} height={100} fill="#374151" stroke="#4b5563" strokeWidth={2} cornerRadius={8} />
@@ -46,6 +53,14 @@ export const ComponentRouter = memo(({ component }: { component: CircuitComponen
     case 'BREADBOARD': return <Breadboard component={component} />;
     case 'SEVEN_SEG_CC': return <SevenSegmentCC component={component} />;
     case 'SEVEN_SEG_CA': return <SevenSegmentCA component={component} />;
+    case 'CAPACITOR': return <Capacitor component={component} />;
+    case 'TRANSISTOR_NPN': return <TransistorNPN component={component} />;
+    case 'TRANSISTOR_PNP': return <TransistorPNP component={component} />;
+    case 'DIODE': return <Diode component={component} />;
+    case 'ZENER_DIODE': return <ZenerDiode component={component} />;
+    case 'PHOTORESISTOR': return <Photoresistor component={component} />;
+    case 'THERMISTOR': return <Thermistor component={component} />;
+    case 'MULTIMETER': return <Multimeter component={component} />;
     // Render fallback for un-implemented types
     default: return <FallbackComponent component={component} />;
   }

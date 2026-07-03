@@ -15,7 +15,15 @@ export type ComponentType =
   | 'BREADBOARD'
   | 'LCD_16X2_I2C'
   | 'SEVEN_SEG_CC'
-  | 'SEVEN_SEG_CA';
+  | 'SEVEN_SEG_CA'
+  | 'CAPACITOR'
+  | 'TRANSISTOR_NPN'
+  | 'TRANSISTOR_PNP'
+  | 'DIODE'
+  | 'ZENER_DIODE'
+  | 'PHOTORESISTOR'
+  | 'THERMISTOR'
+  | 'MULTIMETER';
 
 export type LEDColor = 'red' | 'green' | 'blue' | 'yellow' | 'white';
 export type WireColor = 'red' | 'black' | 'blue' | 'green' | 'yellow' | 'orange' | 'white';
