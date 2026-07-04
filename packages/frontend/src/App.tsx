@@ -17,7 +17,7 @@ import { AuthModal } from './components/ui/AuthModal';
 import { MyProjectsPanel } from './components/ui/MyProjectsPanel';
 import { SaveProjectModal } from './components/ui/SaveProjectModal';
 import { SaveOptionsModal } from './components/ui/SaveOptionsModal';
-import { CapacitorControl } from './components/ui/CapacitorControl';
+
 import { LDRControl } from './components/ui/LDRControl';
 import { ThermistorControl } from './components/ui/ThermistorControl';
 import { MultimeterPanel } from './components/ui/MultimeterPanel';
@@ -134,7 +134,7 @@ function App() {
       
       <SensorDistanceControl />
       <SensorValuesControl />
-      <CapacitorControl />
+
       <LDRControl />
       <ThermistorControl />
       <MultimeterPanel />
