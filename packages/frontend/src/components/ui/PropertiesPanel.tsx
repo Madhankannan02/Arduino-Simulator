@@ -297,6 +297,47 @@ const ComponentSpecificSection = ({
         </div>
       )}
 
+      {type === 'CAPACITOR' && (
+        <div className="space-y-4">
+          <div className="flex flex-col gap-1">
+            <label className="text-xs font-medium text-[#6A7B76]">Capacitance (µF)</label>
+            <input
+              type="number"
+              min="0.1"
+              max="10000"
+              step="0.1"
+              className="bg-white border border-[#E5EBE8] rounded-md px-2 py-1.5 text-sm text-[#2C5E4A] font-medium focus:outline-none focus:border-[#82b49b]"
+              value={Number(props.capacitance ?? 100)}
+              onChange={(e) => updateProps(component.id, { capacitance: parseFloat(e.target.value) || 100 })}
+            />
+          </div>
+          <div className="flex flex-col gap-1">
+            <label className="text-xs font-medium text-[#6A7B76]">Type</label>
+            <select
+              className="bg-white border border-[#E5EBE8] rounded-md px-2 py-1.5 text-sm text-[#2C5E4A] font-medium focus:outline-none focus:border-[#82b49b]"
+              value={String(props.type ?? 'electrolytic')}
+              onChange={(e) => updateProps(component.id, { type: e.target.value })}
+            >
+              <option value="ceramic">Ceramic</option>
+              <option value="electrolytic">Electrolytic</option>
+              <option value="film">Film</option>
+            </select>
+          </div>
+          <div className="flex flex-col gap-1">
+            <label className="text-xs font-medium text-[#6A7B76]">Voltage Rating (V)</label>
+            <input
+              type="number"
+              min="1"
+              max="400"
+              step="1"
+              className="bg-white border border-[#E5EBE8] rounded-md px-2 py-1.5 text-sm text-[#2C5E4A] font-medium focus:outline-none focus:border-[#82b49b]"
+              value={Number(props.voltageRating ?? 25)}
+              onChange={(e) => updateProps(component.id, { voltageRating: parseInt(e.target.value) || 25 })}
+            />
+          </div>
+        </div>
+      )}
+
       {type === 'RESISTOR' && (() => {
         const resValue = props.resistance || 220;
         const getResistorBands = (res: number) => {
@@ -530,6 +571,25 @@ const LiveSimulationSection = ({ component, compState, pinVoltages }: { componen
             <div 
               className="h-full bg-green-500 transition-all duration-100" 
               style={{ width: `${(compState?.brightness || 0) * 100}%` }}
+            />
+          </div>
+        </div>
+      )}
+
+      {type === 'CAPACITOR' && (
+        <div className="space-y-2 text-sm bg-[#F3F4F3] border border-[#E5EBE8] p-3 rounded-lg">
+          <div className="flex justify-between items-center">
+            <span className="text-[#6A7B76] font-medium">Voltage</span>
+            <span className="text-[#2C5E4A] font-bold">{Math.round((compState?.voltage || 0) * 100) / 100} V</span>
+          </div>
+          <div className="flex justify-between items-center">
+            <span className="text-[#6A7B76] font-medium">Charge</span>
+            <span className="text-[#2C5E4A] font-bold">{Math.round(compState?.chargePercent || 0)}%</span>
+          </div>
+          <div className="w-full h-1.5 bg-black/10 rounded-full overflow-hidden mt-1 flex">
+            <div 
+              className={clsx("h-full transition-all duration-100", compState?.isOvervoltage ? 'bg-[#ef4444]' : 'bg-[#3b82f6]')} 
+              style={{ width: `${Math.min(compState?.chargePercent || 0, 100)}%` }}
             />
           </div>
         </div>
