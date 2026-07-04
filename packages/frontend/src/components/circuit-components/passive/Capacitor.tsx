@@ -87,9 +87,6 @@ export const Capacitor = memo(({ component }: CapacitorProps) => {
             <Rect x={10} y={70 - (chargePercent/100)*60} width={30} height={(chargePercent/100)*60} 
               fill="#3b82f6" opacity={0.3} cornerRadius={[0,0,0,5]} listening={false} />
           )}
-          {/* Labels */}
-          <Text x={12} y={30} text={`${capacitance}µF`} fill="white" fontSize={11} width={28} align="center" />
-          <Text x={12} y={45} text={`${voltageRating}V`} fill="gray" fontSize={9} width={28} align="center" />
         </Group>
       )}
 
@@ -97,7 +94,6 @@ export const Capacitor = memo(({ component }: CapacitorProps) => {
         <Group>
           <Circle x={30} y={40} radius={25} fill={bodyColor} 
             shadowColor="#f59e0b" shadowBlur={10} shadowOpacity={glowOpacity} />
-          <Text x={15} y={35} text={`${capacitance}`} fill="black" fontSize={12} width={30} align="center" />
         </Group>
       )}
 
@@ -105,7 +101,6 @@ export const Capacitor = memo(({ component }: CapacitorProps) => {
         <Group>
           <Rect x={10} y={20} width={40} height={40} fill={bodyColor} cornerRadius={2} 
             shadowColor="#0ea5e9" shadowBlur={10} shadowOpacity={glowOpacity} />
-          <Text x={10} y={30} text={`${capacitance}µ`} fill="white" fontSize={11} width={40} align="center" />
         </Group>
       )}
 
