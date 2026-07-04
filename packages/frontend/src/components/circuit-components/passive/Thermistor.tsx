@@ -14,8 +14,6 @@ interface ThermistorProps {
 
 export const Thermistor = memo(({ component }: ThermistorProps) => {
   const { handlePinMouseDown, handlePinMouseEnter, handlePinMouseLeave } = React.useContext(CanvasContext);
-  const isSelected = useWorkspaceStore(state => state.selectedComponentIds.includes(component.id));
-  
   const componentState = useSimulationStore(
     s => s.componentStates[component.id]
   ) as any;
@@ -67,15 +65,6 @@ export const Thermistor = memo(({ component }: ThermistorProps) => {
       onClick={handleClick}
       onTap={handleClick}
     >
-      {isSelected && (
-        <Rect
-          x={0} y={15}
-          width={60} height={40}
-          stroke="#3b82f6" strokeWidth={2}
-          dash={[6, 3]} fill="transparent" listening={false}
-        />
-      )}
-
       {/* Thermistor bead */}
       <Circle x={30} y={35} radius={12} fill={bodyColor} shadowColor={bodyColor} shadowBlur={5} />
       

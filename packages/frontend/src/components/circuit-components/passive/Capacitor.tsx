@@ -14,8 +14,6 @@ interface CapacitorProps {
 
 export const Capacitor = memo(({ component }: CapacitorProps) => {
   const { handlePinMouseDown, handlePinMouseEnter, handlePinMouseLeave } = React.useContext(CanvasContext);
-  const isSelected = useWorkspaceStore(state => state.selectedComponentIds.includes(component.id));
-  
   const componentState = useSimulationStore(
     s => s.componentStates[component.id]
   ) as any;
@@ -72,15 +70,6 @@ export const Capacitor = memo(({ component }: CapacitorProps) => {
       onClick={handleClick}
       onTap={handleClick}
     >
-      {isSelected && (
-        <Rect
-          x={-5} y={-5}
-          width={70} height={90}
-          stroke="#3b82f6" strokeWidth={2}
-          dash={[6, 3]} fill="transparent" listening={false}
-        />
-      )}
-
       {type === 'electrolytic' && (
         <Group>
           {/* Main body */}

@@ -327,17 +327,17 @@ export function createComponent(type: ComponentType, position: Point): CircuitCo
     }
 
     case 'TRANSISTOR_NPN': {
-      pins['COLLECTOR'] = createPin('COLLECTOR', 'C', 'digital', 'bidirectional', { x: 25, y: 15 });
-      pins['BASE'] = createPin('BASE', 'B', 'digital', 'input', { x: 5, y: 40 });
-      pins['EMITTER'] = createPin('EMITTER', 'E', 'ground', 'bidirectional', { x: 25, y: 65 });
+      pins['COLLECTOR'] = createPin('COLLECTOR', 'C', 'digital', 'bidirectional', { x: 10, y: 15 });
+      pins['BASE'] = createPin('BASE', 'B', 'digital', 'input', { x: 20, y: 15 });
+      pins['EMITTER'] = createPin('EMITTER', 'E', 'ground', 'bidirectional', { x: 30, y: 15 });
       properties = { model: 'BC547', hFE: 100, maxCollectorCurrentMa: 200, maxVce: 45 };
       break;
     }
 
     case 'TRANSISTOR_PNP': {
-      pins['EMITTER'] = createPin('EMITTER', 'E', 'power', 'bidirectional', { x: 25, y: 15 });
-      pins['BASE'] = createPin('BASE', 'B', 'digital', 'input', { x: 5, y: 40 });
-      pins['COLLECTOR'] = createPin('COLLECTOR', 'C', 'digital', 'bidirectional', { x: 25, y: 65 });
+      pins['EMITTER'] = createPin('EMITTER', 'E', 'power', 'bidirectional', { x: 10, y: 15 });
+      pins['BASE'] = createPin('BASE', 'B', 'digital', 'input', { x: 20, y: 15 });
+      pins['COLLECTOR'] = createPin('COLLECTOR', 'C', 'digital', 'bidirectional', { x: 30, y: 15 });
       properties = { model: 'BC557', hFE: 100, maxCollectorCurrentMa: 200, maxVce: 45 };
       break;
     }

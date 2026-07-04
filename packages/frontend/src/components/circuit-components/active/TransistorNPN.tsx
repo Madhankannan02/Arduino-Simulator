@@ -14,8 +14,6 @@ interface TransistorProps {
 
 export const TransistorNPN = memo(({ component }: TransistorProps) => {
   const { handlePinMouseDown, handlePinMouseEnter, handlePinMouseLeave } = React.useContext(CanvasContext);
-  const isSelected = useWorkspaceStore(state => state.selectedComponentIds.includes(component.id));
-  
   const componentState = useSimulationStore(
     s => s.componentStates[component.id]
   ) as any;
@@ -62,24 +60,20 @@ export const TransistorNPN = memo(({ component }: TransistorProps) => {
       onClick={handleClick}
       onTap={handleClick}
     >
-      {isSelected && (
-        <Rect
-          x={-5} y={0}
-          width={40} height={80}
-          stroke="#3b82f6" strokeWidth={2}
-          dash={[6, 3]} fill="transparent" listening={false}
-        />
-      )}
+      {/* Bent Legs for 3D TO-92 */}
+      <Path data="M 12 5 L 10 10 L 10 15" stroke="#94a3b8" strokeWidth={2} fill="transparent" />
+      <Path data="M 20 5 L 20 15" stroke="#94a3b8" strokeWidth={2} fill="transparent" />
+      <Path data="M 28 5 L 30 10 L 30 15" stroke="#94a3b8" strokeWidth={2} fill="transparent" />
 
-      {/* TO-92 Package shape */}
-      <Path
-        data="M 10 10 L 40 10 A 15 15 0 0 1 40 70 L 10 70 Z"
-        fill="#1e293b"
+      {/* TO-92 Package body (Front 3D view) */}
+      <Path data="M 8 -15 Q 20 -22 32 -15 Z" fill="#0f172a" />
+      <Rect 
+        x={8} y={-15} width={24} height={20} fill="#1e293b" cornerRadius={1}
         shadowColor={glowColor}
         shadowBlur={10}
         shadowOpacity={0.8}
       />
-      <Text x={15} y={20} text={String(model)} fill="#cbd5e1" fontSize={9} rotation={90} />
+      <Text x={8} y={-11} text={String(model)} fill="#94a3b8" fontSize={6} width={24} align="center" />
 
       {/* Pins */}
       {Object.values(component.pins).map(pin => (
@@ -97,14 +91,12 @@ export const TransistorNPN = memo(({ component }: TransistorProps) => {
             handlePinMouseLeave();
           }}
         >
-          {/* Wire lead extending up into component body */}
-          <Rect x={-10} y={-2} width={10} height={4} fill="#94a3b8" />
-          <Circle radius={6} fill="#e2e8f0" stroke="#64748b" strokeWidth={1} />
-          <Circle radius={2} fill="#64748b" />
+          <Circle radius={3} fill="#e2e8f0" stroke="#64748b" strokeWidth={1} />
+          <Circle radius={1.5} fill="#64748b" />
           <Text
-            x={10} y={-5}
+            x={-5} y={5}
             text={pin.label}
-            fontSize={10} fill="#64748b"
+            fontSize={8} fill="#94a3b8" width={10} align="center"
           />
         </Group>
       ))}

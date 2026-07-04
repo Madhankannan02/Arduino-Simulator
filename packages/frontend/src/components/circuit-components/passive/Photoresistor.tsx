@@ -14,8 +14,6 @@ interface PhotoresistorProps {
 
 export const Photoresistor = memo(({ component }: PhotoresistorProps) => {
   const { handlePinMouseDown, handlePinMouseEnter, handlePinMouseLeave } = React.useContext(CanvasContext);
-  const isSelected = useWorkspaceStore(state => state.selectedComponentIds.includes(component.id));
-  
   const componentState = useSimulationStore(
     s => s.componentStates[component.id]
   ) as any;
@@ -58,15 +56,6 @@ export const Photoresistor = memo(({ component }: PhotoresistorProps) => {
       onClick={handleClick}
       onTap={handleClick}
     >
-      {isSelected && (
-        <Rect
-          x={0} y={10}
-          width={60} height={50}
-          stroke="#3b82f6" strokeWidth={2}
-          dash={[6, 3]} fill="transparent" listening={false}
-        />
-      )}
-
       {/* LDR body */}
       <Circle x={30} y={35} radius={20} fill="#f8fafc" stroke="#94a3b8" strokeWidth={2} />
       

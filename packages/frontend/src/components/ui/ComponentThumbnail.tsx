@@ -41,7 +41,7 @@ export const ComponentThumbnail: React.FC<ComponentThumbnailProps> = ({ type, si
       case 'SEVEN_SEG_CA': return { scale: size / 100, offsetX: -30, offsetY: -45 };
       case 'CAPACITOR': return { scale: size / 100, offsetX: -30, offsetY: -40 };
       case 'TRANSISTOR_NPN':
-      case 'TRANSISTOR_PNP': return { scale: size / 100, offsetX: -25, offsetY: -40 };
+      case 'TRANSISTOR_PNP': return { scale: size / 50, offsetX: -20, offsetY: 0 };
       case 'DIODE':
       case 'ZENER_DIODE': return { scale: size / 80, offsetX: -30, offsetY: -20 };
       case 'PHOTORESISTOR':

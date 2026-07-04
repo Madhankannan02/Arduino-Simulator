@@ -14,8 +14,6 @@ interface MultimeterProps {
 
 export const Multimeter = memo(({ component }: MultimeterProps) => {
   const { handlePinMouseDown, handlePinMouseEnter, handlePinMouseLeave } = React.useContext(CanvasContext);
-  const isSelected = useWorkspaceStore(state => state.selectedComponentIds.includes(component.id));
-  
   const componentState = useSimulationStore(
     s => s.componentStates[component.id]
   ) as any;
@@ -58,15 +56,6 @@ export const Multimeter = memo(({ component }: MultimeterProps) => {
       onClick={handleClick}
       onTap={handleClick}
     >
-      {isSelected && (
-        <Rect
-          x={-5} y={-5}
-          width={110} height={200}
-          stroke="#3b82f6" strokeWidth={2}
-          dash={[6, 3]} fill="transparent" listening={false}
-        />
-      )}
-
       {/* Multimeter Body */}
       <Rect x={10} y={10} width={80} height={150} fill="#facc15" cornerRadius={10} shadowColor="black" shadowBlur={10} shadowOpacity={0.3} />
       {/* Inner dark bezel */}

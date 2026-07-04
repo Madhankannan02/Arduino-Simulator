@@ -14,8 +14,6 @@ interface ZenerDiodeProps {
 
 export const ZenerDiode = memo(({ component }: ZenerDiodeProps) => {
   const { handlePinMouseDown, handlePinMouseEnter, handlePinMouseLeave } = React.useContext(CanvasContext);
-  const isSelected = useWorkspaceStore(state => state.selectedComponentIds.includes(component.id));
-  
   const componentState = useSimulationStore(
     s => s.componentStates[component.id]
   ) as any;
@@ -59,15 +57,6 @@ export const ZenerDiode = memo(({ component }: ZenerDiodeProps) => {
       onClick={handleClick}
       onTap={handleClick}
     >
-      {isSelected && (
-        <Rect
-          x={-5} y={15}
-          width={70} height={30}
-          stroke="#3b82f6" strokeWidth={2}
-          dash={[6, 3]} fill="transparent" listening={false}
-        />
-      )}
-
       {/* Zener body */}
       <Rect x={15} y={22} width={30} height={16} fill={bodyColor} cornerRadius={2} opacity={0.8} />
       {/* Cathode stripe */}

@@ -55,6 +55,26 @@ export const getComponentBounds = (comp: CircuitComponent) => {
     case 'BREADBOARD':
       width = 320; height = 180; offsetX = 0; offsetY = 0;
       break;
+    case 'TRANSISTOR_NPN':
+    case 'TRANSISTOR_PNP':
+      width = 30; height = 42; offsetX = 5; offsetY = -22;
+      break;
+    case 'CAPACITOR':
+      width = 70; height = 90; offsetX = -5; offsetY = -5;
+      break;
+    case 'DIODE':
+    case 'ZENER_DIODE':
+      width = 70; height = 30; offsetX = -5; offsetY = 15;
+      break;
+    case 'PHOTORESISTOR':
+      width = 60; height = 50; offsetX = 0; offsetY = 10;
+      break;
+    case 'THERMISTOR':
+      width = 60; height = 40; offsetX = 0; offsetY = 15;
+      break;
+    case 'MULTIMETER':
+      width = 110; height = 200; offsetX = -5; offsetY = -5;
+      break;
   }
   
   return {
