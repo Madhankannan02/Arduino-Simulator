@@ -14,8 +14,6 @@ export const SevenSegmentCC = memo(({ component }: SevenSegmentCCProps) => {
   const [hoveredPin, setHoveredPin] = useState<string | null>(null);
   const { handlePinMouseDown, handlePinMouseEnter, handlePinMouseLeave } = React.useContext(CanvasContext);
   
-  const isSelected = useWorkspaceStore(state => state.selectedComponentIds.includes(component.id));
-
   // Read simulation state directly from store
   const componentState = useSimulationStore(
     s => s.componentStates[component.id]
@@ -137,21 +135,6 @@ export const SevenSegmentCC = memo(({ component }: SevenSegmentCCProps) => {
       onClick={handleClick}
       onTap={handleClick}
     >
-      {/* Selection Border */}
-      {isSelected && (
-        <Rect
-          x={-3}
-          y={-3}
-          width={66}
-          height={96}
-          stroke="#3b82f6"
-          strokeWidth={2}
-          dash={[6, 3]}
-          fill="transparent"
-          listening={false}
-        />
-      )}
-
       {/* Outer Housing */}
       <Rect
         x={0}
