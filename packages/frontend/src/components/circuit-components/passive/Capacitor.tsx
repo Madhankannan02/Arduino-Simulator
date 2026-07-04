@@ -79,9 +79,9 @@ export const Capacitor = memo(({ component }: CapacitorProps) => {
           {/* Negative stripe */}
           <Rect x={40} y={10} width={10} height={60} fill="#cbd5e1" 
             cornerRadius={[0, 5, 5, 0]} />
-          <Text x={42} y={35} text="-" fill="black" fontSize={16} />
+          <Text x={40} y={10} width={10} height={60} text="-" fill="black" fontSize={18} align="center" verticalAlign="middle" />
           {/* Positive marking */}
-          <Text x={15} y={15} text="+" fill="white" fontSize={12} />
+          <Text x={10} y={10} width={30} height={60} text="+" fill="white" fontSize={16} align="center" verticalAlign="middle" opacity={0.7} />
           {/* Charge indicator fill */}
           {chargePercent > 0 && (
             <Rect x={10} y={70 - (chargePercent/100)*60} width={30} height={(chargePercent/100)*60} 
