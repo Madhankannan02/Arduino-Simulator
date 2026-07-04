@@ -13,6 +13,7 @@ interface MultimeterProps {
 }
 
 export const Multimeter = memo(({ component }: MultimeterProps) => {
+  const [hoveredPin, setHoveredPin] = React.useState<string | null>(null);
   const { handlePinMouseDown, handlePinMouseEnter, handlePinMouseLeave } = React.useContext(CanvasContext);
   const componentState = useSimulationStore(
     s => s.componentStates[component.id]
@@ -87,32 +88,49 @@ export const Multimeter = memo(({ component }: MultimeterProps) => {
       <Path data="M 70 145 C 70 180 70 200 70 220" stroke="#ef4444" strokeWidth={3} />
 
       {/* Pins */}
-      {Object.values(component.pins).map(pin => (
-        <Group
-          key={pin.id}
-          x={pin.position.x}
-          y={pin.position.y}
-          onMouseDown={(e) => onPinMouseDown(e, pin.id)}
-          onMouseEnter={(e) => {
-            e.target.getStage()!.container().style.cursor = 'crosshair';
-            handlePinMouseEnter({ componentId: component.id, pinId: pin.id });
-          }}
-          onMouseLeave={(e) => {
-            e.target.getStage()!.container().style.cursor = 'default';
-            handlePinMouseLeave();
-          }}
-        >
-          {/* Probe tips */}
-          <Path 
-            data="M -2 -15 L 2 -15 L 1 -5 L 1 0 L -1 0 L -1 -5 Z" 
-            fill={pin.id === 'RED_PROBE' ? '#ef4444' : '#000000'} 
-          />
-          <Path data="M -0.5 0 L 0.5 0 L 0.5 10 L -0.5 10 Z" fill="#94a3b8" />
-          
-          <Circle radius={6} fill="#e2e8f0" stroke={pin.id === 'RED_PROBE' ? '#ef4444' : '#000000'} strokeWidth={1} />
-          <Circle radius={2} fill={pin.id === 'RED_PROBE' ? '#ef4444' : '#000000'} />
-        </Group>
-      ))}
+      {Object.values(component.pins).map(pin => {
+        const isHovered = hoveredPin === pin.id;
+        return (
+          <Group
+            key={pin.id}
+            x={pin.position.x}
+            y={pin.position.y}
+            onMouseDown={(e) => onPinMouseDown(e, pin.id)}
+            onMouseEnter={(e) => {
+              setHoveredPin(pin.id);
+              e.target.getStage()!.container().style.cursor = 'crosshair';
+              handlePinMouseEnter({ componentId: component.id, pinId: pin.id });
+            }}
+            onMouseLeave={(e) => {
+              setHoveredPin(null);
+              e.target.getStage()!.container().style.cursor = 'default';
+              handlePinMouseLeave();
+            }}
+          >
+            
+            <Circle x={0} y={0} radius={6} fill="transparent" />
+            <Circle
+              x={0} y={0}
+              radius={isHovered ? 2.5 : 1.5}
+              fill={isHovered ? '#fbbf24' : '#171717'}
+              stroke={isHovered ? '#fbbf24' : '#404040'}
+              strokeWidth={isHovered ? 1 : 0.5}
+            />
+            {isHovered && (
+              <Group x={-12} y={8}>
+                <Rect width={24} height={10} fill="#1f2937" cornerRadius={2} opacity={0.9} />
+                <Text
+                  text={pin.label}
+                  width={24} height={10}
+                  align="center" verticalAlign="middle"
+                  fontSize={6} fill="#fbbf24"
+                  fontFamily="monospace" fontStyle="bold"
+                />
+              </Group>
+            )}
+          </Group>
+        );
+      })}
 
       {/* Connection warning */}
       {!isConnected && (

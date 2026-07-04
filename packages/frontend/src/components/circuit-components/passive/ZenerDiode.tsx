@@ -13,6 +13,7 @@ interface ZenerDiodeProps {
 }
 
 export const ZenerDiode = memo(({ component }: ZenerDiodeProps) => {
+  const [hoveredPin, setHoveredPin] = React.useState<string | null>(null);
   const { handlePinMouseDown, handlePinMouseEnter, handlePinMouseLeave } = React.useContext(CanvasContext);
   const componentState = useSimulationStore(
     s => s.componentStates[component.id]
@@ -67,32 +68,50 @@ export const ZenerDiode = memo(({ component }: ZenerDiodeProps) => {
       <Path data="M 32 23 L 35 25 L 35 35 L 38 37" stroke="#78350f" strokeWidth={2} />
 
       {/* Pins */}
-      {Object.values(component.pins).map(pin => (
-        <Group
-          key={pin.id}
-          x={pin.position.x}
-          y={pin.position.y}
-          onMouseDown={(e) => onPinMouseDown(e, pin.id)}
-          onMouseEnter={(e) => {
-            e.target.getStage()!.container().style.cursor = 'crosshair';
-            handlePinMouseEnter({ componentId: component.id, pinId: pin.id });
-          }}
-          onMouseLeave={(e) => {
-            e.target.getStage()!.container().style.cursor = 'default';
-            handlePinMouseLeave();
-          }}
-        >
-          {/* Wire lead extending inward */}
+      {Object.values(component.pins).map(pin => {
+        const isHovered = hoveredPin === pin.id;
+        return (
+          <Group
+            key={pin.id}
+            x={pin.position.x}
+            y={pin.position.y}
+            onMouseDown={(e) => onPinMouseDown(e, pin.id)}
+            onMouseEnter={(e) => {
+              setHoveredPin(pin.id);
+              e.target.getStage()!.container().style.cursor = 'crosshair';
+              handlePinMouseEnter({ componentId: component.id, pinId: pin.id });
+            }}
+            onMouseLeave={(e) => {
+              setHoveredPin(null);
+              e.target.getStage()!.container().style.cursor = 'default';
+              handlePinMouseLeave();
+            }}
+          >
+            {/* Wire lead extending inward */}
           <Rect x={pin.id === 'ANODE' ? 0 : -5} y={-2} width={5} height={4} fill="#94a3b8" />
-          <Circle radius={6} fill="#e2e8f0" stroke="#64748b" strokeWidth={1} />
-          <Circle radius={2} fill="#64748b" />
-          <Text
-            x={-5} y={-15}
-            text={pin.label}
-            fontSize={10} fill="#64748b"
-          />
-        </Group>
-      ))}
+            <Circle x={0} y={0} radius={6} fill="transparent" />
+            <Circle
+              x={0} y={0}
+              radius={isHovered ? 2.5 : 1.5}
+              fill={isHovered ? '#fbbf24' : '#171717'}
+              stroke={isHovered ? '#fbbf24' : '#404040'}
+              strokeWidth={isHovered ? 1 : 0.5}
+            />
+            {isHovered && (
+              <Group x={-12} y={8}>
+                <Rect width={24} height={10} fill="#1f2937" cornerRadius={2} opacity={0.9} />
+                <Text
+                  text={pin.label}
+                  width={24} height={10}
+                  align="center" verticalAlign="middle"
+                  fontSize={6} fill="#fbbf24"
+                  fontFamily="monospace" fontStyle="bold"
+                />
+              </Group>
+            )}
+          </Group>
+        );
+      })}
 
       {isReverseZenerConduction && (
         <Circle x={30} y={30} radius={25} fill="#f59e0b" opacity={0.3} listening={false} />

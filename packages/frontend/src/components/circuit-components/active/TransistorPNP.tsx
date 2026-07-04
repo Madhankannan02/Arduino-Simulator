@@ -13,6 +13,7 @@ interface TransistorProps {
 }
 
 export const TransistorPNP = memo(({ component }: TransistorProps) => {
+  const [hoveredPin, setHoveredPin] = React.useState<string | null>(null);
   const { handlePinMouseDown, handlePinMouseEnter, handlePinMouseLeave } = React.useContext(CanvasContext);
   const componentState = useSimulationStore(
     s => s.componentStates[component.id]
@@ -76,30 +77,49 @@ export const TransistorPNP = memo(({ component }: TransistorProps) => {
       <Text x={8} y={-11} text={String(model)} fill="#94a3b8" fontSize={6} width={24} align="center" />
 
       {/* Pins */}
-      {Object.values(component.pins).map(pin => (
-        <Group
-          key={pin.id}
-          x={pin.position.x}
-          y={pin.position.y}
-          onMouseDown={(e) => onPinMouseDown(e, pin.id)}
-          onMouseEnter={(e) => {
-            e.target.getStage()!.container().style.cursor = 'crosshair';
-            handlePinMouseEnter({ componentId: component.id, pinId: pin.id });
-          }}
-          onMouseLeave={(e) => {
-            e.target.getStage()!.container().style.cursor = 'default';
-            handlePinMouseLeave();
-          }}
-        >
-          <Circle radius={3} fill="#e2e8f0" stroke="#64748b" strokeWidth={1} />
-          <Circle radius={1.5} fill="#64748b" />
-          <Text
-            x={-5} y={5}
-            text={pin.label}
-            fontSize={8} fill="#94a3b8" width={10} align="center"
-          />
-        </Group>
-      ))}
+      {Object.values(component.pins).map(pin => {
+        const isHovered = hoveredPin === pin.id;
+        return (
+          <Group
+            key={pin.id}
+            x={pin.position.x}
+            y={pin.position.y}
+            onMouseDown={(e) => onPinMouseDown(e, pin.id)}
+            onMouseEnter={(e) => {
+              setHoveredPin(pin.id);
+              e.target.getStage()!.container().style.cursor = 'crosshair';
+              handlePinMouseEnter({ componentId: component.id, pinId: pin.id });
+            }}
+            onMouseLeave={(e) => {
+              setHoveredPin(null);
+              e.target.getStage()!.container().style.cursor = 'default';
+              handlePinMouseLeave();
+            }}
+          >
+            
+            <Circle x={0} y={0} radius={6} fill="transparent" />
+            <Circle
+              x={0} y={0}
+              radius={isHovered ? 2.5 : 1.5}
+              fill={isHovered ? '#fbbf24' : '#171717'}
+              stroke={isHovered ? '#fbbf24' : '#404040'}
+              strokeWidth={isHovered ? 1 : 0.5}
+            />
+            {isHovered && (
+              <Group x={-12} y={8}>
+                <Rect width={24} height={10} fill="#1f2937" cornerRadius={2} opacity={0.9} />
+                <Text
+                  text={pin.label}
+                  width={24} height={10}
+                  align="center" verticalAlign="middle"
+                  fontSize={6} fill="#fbbf24"
+                  fontFamily="monospace" fontStyle="bold"
+                />
+              </Group>
+            )}
+          </Group>
+        );
+      })}
 
       {/* Live state overlay */}
       {operatingMode !== 'cutoff' && (

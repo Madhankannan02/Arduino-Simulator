@@ -13,6 +13,7 @@ interface ThermistorProps {
 }
 
 export const Thermistor = memo(({ component }: ThermistorProps) => {
+  const [hoveredPin, setHoveredPin] = React.useState<string | null>(null);
   const { handlePinMouseDown, handlePinMouseEnter, handlePinMouseLeave } = React.useContext(CanvasContext);
   const componentState = useSimulationStore(
     s => s.componentStates[component.id]
@@ -76,27 +77,50 @@ export const Thermistor = memo(({ component }: ThermistorProps) => {
       <Path data="M 15 50 L 10 50" stroke="#1e293b" strokeWidth={2} />
 
       {/* Pins */}
-      {Object.values(component.pins).map(pin => (
-        <Group
-          key={pin.id}
-          x={pin.position.x}
-          y={pin.position.y}
-          onMouseDown={(e) => onPinMouseDown(e, pin.id)}
-          onMouseEnter={(e) => {
-            e.target.getStage()!.container().style.cursor = 'crosshair';
-            handlePinMouseEnter({ componentId: component.id, pinId: pin.id });
-          }}
-          onMouseLeave={(e) => {
-            e.target.getStage()!.container().style.cursor = 'default';
-            handlePinMouseLeave();
-          }}
-        >
-          {/* Wire lead extending up to bead */}
+      {Object.values(component.pins).map(pin => {
+        const isHovered = hoveredPin === pin.id;
+        return (
+          <Group
+            key={pin.id}
+            x={pin.position.x}
+            y={pin.position.y}
+            onMouseDown={(e) => onPinMouseDown(e, pin.id)}
+            onMouseEnter={(e) => {
+              setHoveredPin(pin.id);
+              e.target.getStage()!.container().style.cursor = 'crosshair';
+              handlePinMouseEnter({ componentId: component.id, pinId: pin.id });
+            }}
+            onMouseLeave={(e) => {
+              setHoveredPin(null);
+              e.target.getStage()!.container().style.cursor = 'default';
+              handlePinMouseLeave();
+            }}
+          >
+            {/* Wire lead extending up to bead */}
           <Path data={`M 0 0 C 0 -10 ${pin.id === 'PIN_1' ? '20' : '-20'} -25 0 -25`} stroke="#94a3b8" strokeWidth={2} />
-          <Circle radius={6} fill="#e2e8f0" stroke="#64748b" strokeWidth={1} />
-          <Circle radius={2} fill="#64748b" />
-        </Group>
-      ))}
+            <Circle x={0} y={0} radius={6} fill="transparent" />
+            <Circle
+              x={0} y={0}
+              radius={isHovered ? 2.5 : 1.5}
+              fill={isHovered ? '#fbbf24' : '#171717'}
+              stroke={isHovered ? '#fbbf24' : '#404040'}
+              strokeWidth={isHovered ? 1 : 0.5}
+            />
+            {isHovered && (
+              <Group x={-12} y={8}>
+                <Rect width={24} height={10} fill="#1f2937" cornerRadius={2} opacity={0.9} />
+                <Text
+                  text={pin.label}
+                  width={24} height={10}
+                  align="center" verticalAlign="middle"
+                  fontSize={6} fill="#fbbf24"
+                  fontFamily="monospace" fontStyle="bold"
+                />
+              </Group>
+            )}
+          </Group>
+        );
+      })}
 
       {/* Live State */}
       {componentState?.temperatureCelsius !== undefined && (
