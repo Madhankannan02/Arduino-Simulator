@@ -60,7 +60,13 @@ export const Breadboard = memo(({ component }: BreadboardProps) => {
   useEffect(() => {
     if (pcbGroupRef.current) {
       pcbGroupRef.current.clearCache();
-      pcbGroupRef.current.cache({ pixelRatio: 2 });
+      pcbGroupRef.current.cache({
+        x: -10,
+        y: -10,
+        width: 350,
+        height: 200,
+        pixelRatio: 2
+      });
     }
   }, [component.rotation, connectedPins]);
 
