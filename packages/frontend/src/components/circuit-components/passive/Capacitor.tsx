@@ -41,8 +41,6 @@ export const Capacitor = memo(({ component }: CapacitorProps) => {
   }, [component.id, handlePinMouseDown]);
 
   const type = component.properties?.type || 'electrolytic';
-  const capacitance = component.properties?.capacitance || 100;
-  const voltageRating = component.properties?.voltageRating || 25;
   const chargePercent = componentState?.chargePercent || 0;
   const isOvervoltage = componentState?.isOvervoltage || false;
   const isReversePolarized = componentState?.isReversePolarized || false;
