@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useCallback, memo } from 'react';
-import { Group, Rect, Circle, Text } from 'react-konva';
+import { Group, Rect, Circle, Text, Path } from 'react-konva';
 import { KonvaEventObject } from 'konva/lib/Node';
 import { CircuitComponent } from '../../../types/components';
 import { useWorkspaceStore } from '../../../store/workspaceStore';
@@ -92,8 +92,16 @@ export const Capacitor = memo(({ component }: CapacitorProps) => {
 
       {type === 'ceramic' && (
         <Group>
+          {/* Epoxy dipped legs covering the wire leads */}
+          <Path
+            data="M17.5,58 L17.5,74 Q20,77 22.5,74 L22.5,58 Z M37.5,58 L37.5,74 Q40,77 42.5,74 L42.5,58 Z"
+            fill={bodyColor}
+          />
+          {/* Main ceramic disc body */}
           <Circle x={30} y={40} radius={25} fill={bodyColor} 
-            shadowColor="#f59e0b" shadowBlur={10} shadowOpacity={glowOpacity} />
+            shadowColor="#f59e0b" shadowBlur={15} shadowOpacity={glowOpacity > 0 ? glowOpacity : 0.2} />
+          {/* 3D Specular Highlight */}
+          <Circle x={25} y={32} radius={14} fill="white" opacity={0.15} />
         </Group>
       )}
 
