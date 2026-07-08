@@ -399,4 +399,7 @@ export function createComponent(type: ComponentType, position: Point, initialPro
 }
 
 // @ts-ignore - temporary test exposure, remove after testing
-if (typeof window !== 'undefined') (window as any).testFactory = createComponent;
+if (typeof window !== 'undefined') {
+  (window as any).testFactory = createComponent;
+  (window as any).createComponent = createComponent;
+}
