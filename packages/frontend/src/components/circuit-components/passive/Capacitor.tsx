@@ -53,7 +53,7 @@ export const Capacitor = memo(({ component }: CapacitorProps) => {
   } else if (type === 'ceramic') {
     bodyColor = '#f59e0b'; // Orange/yellow disc
   } else if (type === 'film') {
-    bodyColor = '#0ea5e9'; // Blue box
+    bodyColor = '#dc2626'; // Red film box
   }
 
   // Animation for charging - subtle glow based on charge
@@ -107,8 +107,19 @@ export const Capacitor = memo(({ component }: CapacitorProps) => {
 
       {type === 'film' && (
         <Group>
-          <Rect x={10} y={20} width={40} height={40} fill={bodyColor} cornerRadius={2} 
-            shadowColor="#0ea5e9" shadowBlur={10} shadowOpacity={glowOpacity} />
+          {/* Flared epoxy bottom corners covering the wire leads */}
+          <Path
+            data="M17.5,55 L17.5,74 Q20,77 22.5,74 L22.5,55 Z M37.5,55 L37.5,74 Q40,77 42.5,74 L42.5,55 Z"
+            fill={bodyColor}
+          />
+          {/* Main film box body */}
+          <Rect x={8} y={15} width={44} height={42} fill={bodyColor} cornerRadius={[4, 4, 2, 2]} 
+            shadowColor="#ef4444" shadowBlur={15} shadowOpacity={glowOpacity > 0 ? glowOpacity : 0.2} />
+          {/* Top glossy edge highlight */}
+          <Rect x={10} y={17} width={40} height={4} fill="white" opacity={0.25} cornerRadius={2} />
+          {/* Side glossy edge highlights */}
+          <Rect x={9} y={20} width={2} height={32} fill="white" opacity={0.15} cornerRadius={1} />
+          <Rect x={49} y={20} width={2} height={32} fill="white" opacity={0.15} cornerRadius={1} />
         </Group>
       )}
 
