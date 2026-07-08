@@ -21,7 +21,9 @@ export interface SavedProject {
 const VALID_COMPONENT_TYPES: ComponentType[] = [
   'ARDUINO_UNO', 'LED', 'RESISTOR', 'PUSH_BUTTON', 'POTENTIOMETER', 
   'SERVO_MOTOR', 'LCD_16X2', 'LCD_16X2_I2C', 'BUZZER', 'ULTRASONIC_SENSOR', 
-  'TEMPERATURE_SENSOR', 'RELAY', 'BREADBOARD', 'SEVEN_SEG_CC', 'SEVEN_SEG_CA'
+  'TEMPERATURE_SENSOR', 'RELAY', 'BREADBOARD', 'SEVEN_SEG_CC', 'SEVEN_SEG_CA',
+  'CAPACITOR', 'TRANSISTOR_NPN', 'TRANSISTOR_PNP', 'DIODE', 'ZENER_DIODE', 
+  'PHOTORESISTOR', 'THERMISTOR', 'MULTIMETER'
 ];
 
 export async function serializeProject(name: string = 'Untitled Project', generateThumbnail: boolean = false): Promise<SavedProject> {
