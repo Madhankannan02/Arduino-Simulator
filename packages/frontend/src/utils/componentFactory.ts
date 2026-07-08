@@ -8,10 +8,10 @@ import {
   PinDirection
 } from '../types/components';
 
-export function createComponent(type: ComponentType, position: Point): CircuitComponent {
+export function createComponent(type: ComponentType, position: Point, initialProperties?: Record<string, any>): CircuitComponent {
   const id = uuidv4();
   let pins: Record<string, Pin> = {};
-  let properties: Record<string, any> = {};
+  let properties: Record<string, any> = initialProperties ? { ...initialProperties } : {};
 
   const createPin = (pinId: string, label: string, pType: PinType, direction: PinDirection, pos: Point): Pin => ({
     id: pinId,
@@ -320,9 +320,15 @@ export function createComponent(type: ComponentType, position: Point): CircuitCo
 
     
     case 'CAPACITOR': {
-      pins['POSITIVE'] = createPin('POSITIVE', '+', 'power', 'input', { x: 20, y: 80 });
-      pins['NEGATIVE'] = createPin('NEGATIVE', '-', 'ground', 'input', { x: 40, y: 80 });
-      properties = { type: 'electrolytic', capacitance: 100, voltageRating: 25 };
+      const capType = properties.type || 'electrolytic';
+      if (capType === 'ceramic' || capType === 'film') {
+        pins['PIN_1'] = createPin('PIN_1', '1', 'digital', 'bidirectional', { x: 20, y: 80 });
+        pins['PIN_2'] = createPin('PIN_2', '2', 'digital', 'bidirectional', { x: 40, y: 80 });
+      } else {
+        pins['POSITIVE'] = createPin('POSITIVE', '+', 'power', 'input', { x: 20, y: 80 });
+        pins['NEGATIVE'] = createPin('NEGATIVE', '-', 'ground', 'input', { x: 40, y: 80 });
+      }
+      properties = { type: 'electrolytic', capacitance: 100, voltageRating: 25, ...properties };
       break;
     }
 
