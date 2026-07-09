@@ -66,7 +66,7 @@ A highly rigid factory architecture (`componentFactory.ts`) ensuring flawless in
   - `PushButton`: Fully interactive with visual pressing animations, triggering immediate events to the simulation core.
   - `Servo`: Continuous rotation servo support with a toggle switch directly in the properties panel.
   - `TemperatureSensor` (DHT11): Features a custom UI panel with sliders to dynamically adjust simulated temperature and humidity values.
-  - `Capacitor`: Fully modeled with capacitance, voltage ratings, and live state tracking (voltage drop, charge percentage). Visuals dynamically indicate overvoltage events.
+  - `Capacitor`: Fully modeled with capacitance, voltage ratings, and live state tracking. Includes three realistic 3D-styled visual variants (Electrolytic cylinder, Ceramic orange disc, and Film red box) that automatically update based on the selected type. Visuals dynamically indicate overvoltage and reverse polarity events.
   - `Transistors` (NPN & PNP): Features true-to-life 3D front-facing TO-92 packages with carefully spaced pins mapped to breadboard constraints.
   - `Diodes` (Standard & Zener): Directional flow limiters with appropriate voltage drops and visual indicators.
   - `Photoresistor` (LDR): Simulated light-dependent resistor that dynamically changes its resistance value.
