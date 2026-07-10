@@ -132,12 +132,14 @@ export const Capacitor = memo(({ component }: CapacitorProps) => {
             onMouseDown={(e) => onPinMouseDown(e, pin.id)}
             onMouseEnter={(e) => {
               setHoveredPin(pin.id);
-              e.target.getStage()!.container().style.cursor = 'crosshair';
+              const stage = e.target.getStage();
+              if (stage) stage.container().style.cursor = 'crosshair';
               handlePinMouseEnter({ componentId: component.id, pinId: pin.id });
             }}
             onMouseLeave={(e) => {
               setHoveredPin(null);
-              e.target.getStage()!.container().style.cursor = 'default';
+              const stage = e.target.getStage();
+              if (stage) stage.container().style.cursor = 'default';
               handlePinMouseLeave();
             }}
           >

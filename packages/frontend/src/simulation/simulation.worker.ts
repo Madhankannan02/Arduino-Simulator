@@ -259,8 +259,8 @@ function updateComponentsState(now: number) {
       const pin1Id = isPolarized ? 'POSITIVE' : 'PIN_1';
       const pin2Id = isPolarized ? 'NEGATIVE' : 'PIN_2';
       
-      const v1 = circuitGraph.getNodeVoltage(id, pin1Id);
-      const v2 = circuitGraph.getNodeVoltage(id, pin2Id);
+      const v1 = circuitGraph.getMaxConnectedVoltage(`${id}.${pin1Id}`);
+      const v2 = circuitGraph.getMinConnectedVoltage(`${id}.${pin2Id}`);
       
       let appliedVoltage = v1 - v2;
       let reverse = false;
@@ -304,9 +304,9 @@ function updateComponentsState(now: number) {
     
     // TRANSISTOR NPN
     else if (comp.type === 'TRANSISTOR_NPN') {
-      const vBase = circuitGraph.getNodeVoltage(id, 'BASE');
-      const vEmitter = circuitGraph.getNodeVoltage(id, 'EMITTER');
-      const vCollector = circuitGraph.getNodeVoltage(id, 'COLLECTOR');
+      const vBase = circuitGraph.getMaxConnectedVoltage(`${id}.BASE`);
+      const vEmitter = circuitGraph.getMinConnectedVoltage(`${id}.EMITTER`);
+      const vCollector = circuitGraph.getMaxConnectedVoltage(`${id}.COLLECTOR`);
       
       const vbe = vBase - vEmitter;
       let isOn = false;
@@ -356,9 +356,9 @@ function updateComponentsState(now: number) {
 
     // TRANSISTOR PNP
     else if (comp.type === 'TRANSISTOR_PNP') {
-      const vBase = circuitGraph.getNodeVoltage(id, 'BASE');
-      const vEmitter = circuitGraph.getNodeVoltage(id, 'EMITTER');
-      const vCollector = circuitGraph.getNodeVoltage(id, 'COLLECTOR');
+      const vBase = circuitGraph.getMinConnectedVoltage(`${id}.BASE`);
+      const vEmitter = circuitGraph.getMaxConnectedVoltage(`${id}.EMITTER`);
+      const vCollector = circuitGraph.getMinConnectedVoltage(`${id}.COLLECTOR`);
       
       const veb = vEmitter - vBase;
       let isOn = false;
@@ -408,8 +408,8 @@ function updateComponentsState(now: number) {
 
     // DIODE
     else if (comp.type === 'DIODE') {
-      const vAnode = circuitGraph.getNodeVoltage(id, 'ANODE');
-      const vCathode = circuitGraph.getNodeVoltage(id, 'CATHODE');
+      const vAnode = circuitGraph.getMaxConnectedVoltage(`${id}.ANODE`);
+      const vCathode = circuitGraph.getMinConnectedVoltage(`${id}.CATHODE`);
       const vDiff = vAnode - vCathode;
       
       const type = comp.properties?.type || 'silicon';
@@ -450,8 +450,8 @@ function updateComponentsState(now: number) {
 
     // ZENER DIODE
     else if (comp.type === 'ZENER_DIODE') {
-      const vAnode = circuitGraph.getNodeVoltage(id, 'ANODE');
-      const vCathode = circuitGraph.getNodeVoltage(id, 'CATHODE');
+      const vAnode = circuitGraph.getMaxConnectedVoltage(`${id}.ANODE`);
+      const vCathode = circuitGraph.getMinConnectedVoltage(`${id}.CATHODE`);
       const vDiff = vAnode - vCathode;
       const vz = Number(comp.properties?.zenerVoltage) || 5.1;
       const maxPowerW = Number(comp.properties?.powerRatingW) || 0.5;
@@ -500,8 +500,8 @@ function updateComponentsState(now: number) {
       circuitGraph.setDynamicResistance(id, currentResistance);
       circuitGraph.closeSwitch(`${id}.PIN_1`, `${id}.PIN_2`);
 
-      const v1 = circuitGraph.getNodeVoltage(id, 'PIN_1');
-      const v2 = circuitGraph.getNodeVoltage(id, 'PIN_2');
+      const v1 = circuitGraph.getMaxConnectedVoltage(`${id}.PIN_1`);
+      const v2 = circuitGraph.getMinConnectedVoltage(`${id}.PIN_2`);
       const voltageAcross = Math.abs(v1 - v2);
       const currentMa = (voltageAcross / currentResistance) * 1000;
 
@@ -541,8 +541,8 @@ function updateComponentsState(now: number) {
       circuitGraph.setDynamicResistance(id, currentResistance);
       circuitGraph.closeSwitch(`${id}.PIN_1`, `${id}.PIN_2`);
 
-      const v1 = circuitGraph.getNodeVoltage(id, 'PIN_1');
-      const v2 = circuitGraph.getNodeVoltage(id, 'PIN_2');
+      const v1 = circuitGraph.getMaxConnectedVoltage(`${id}.PIN_1`);
+      const v2 = circuitGraph.getMinConnectedVoltage(`${id}.PIN_2`);
       const voltageAcross = Math.abs(v1 - v2);
       const currentMa = (voltageAcross / currentResistance) * 1000;
 
@@ -565,8 +565,8 @@ function updateComponentsState(now: number) {
     // MULTIMETER
     else if (comp.type === 'MULTIMETER') {
       const mode = String(comp.properties?.mode || 'DCV');
-      const vRed = circuitGraph.getNodeVoltage(id, 'RED_PROBE');
-      const vBlack = circuitGraph.getNodeVoltage(id, 'BLACK_PROBE');
+      const vRed = circuitGraph.getMaxConnectedVoltage(`${id}.RED_PROBE`);
+      const vBlack = circuitGraph.getMinConnectedVoltage(`${id}.BLACK_PROBE`);
       
       const nodeR = circuitGraph.nodes.get(`${id}.RED_PROBE`);
       const nodeB = circuitGraph.nodes.get(`${id}.BLACK_PROBE`);
