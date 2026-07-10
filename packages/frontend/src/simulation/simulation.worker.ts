@@ -263,10 +263,8 @@ function updateComponentsState(now: number) {
       const v2 = circuitGraph.getMinConnectedVoltage(`${id}.${pin2Id}`);
       
       let appliedVoltage = v1 - v2;
-      let reverse = false;
       if (appliedVoltage < 0 && !isPolarized) {
         appliedVoltage = -appliedVoltage;
-        reverse = true;
       }
       
       const seriesResistance = Math.max(10, circuitGraph.findSeriesResistance(`${id}.${pin1Id}`));
